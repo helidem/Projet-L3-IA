@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator AfficherMouvement(MoveInfo moveInfo)
     {
         PlacerPiece(prefabPieces[moveInfo.Joueur], moveInfo.Position);
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(0.33f);
         RetournerPieces(moveInfo.Capturés);
         yield return new WaitForSeconds(0.83f);
     }
