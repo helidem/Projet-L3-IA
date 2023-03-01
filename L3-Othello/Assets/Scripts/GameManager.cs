@@ -16,9 +16,16 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Piece pieceBlanc;
 
+    [SerializeField]
+    private GameObject highlightPrefab;
+
     private Dictionary<Joueur, Piece> prefabPieces = new Dictionary<Joueur, Piece>();
     private GameState gameState = new GameState();
     private Piece[,] pieces = new Piece[8, 8];
+    private bool peutJouer = true;
+    private List<GameObject> highlights = new List<GameObject>();
+
+ 
 
 
     // Start is called before the first frame update
@@ -28,6 +35,7 @@ public class GameManager : MonoBehaviour
         prefabPieces[Joueur.Blanc] = pieceBlanc;
 
         PiecesDepart();
+        AfficherCoupsLegaux();
     }
 
     // Update is called once per frame
@@ -50,8 +58,32 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void AfficherCoupsLegaux()
+    {
+        foreach(Position position in gameState.MouvementsLegaux.Keys)
+        {
+            Vector2 scenePos = PlateauToScenePos(position) + Vector2.up * 0.01f;
+            GameObject hl = Instantiate(highlightPrefab, scenePos, Quaternion.identity);
+            highlights.Add(hl);
+        }
+    }
+
+    private void CacherCoupsLegaux()
+    {
+        highlights.ForEach(Destroy);
+        highlights.Clear();
+    }
+
+
+
+
     private void OnPlateauClicked(Position plateauPos)
     {
+        if(!peutJouer) 
+        {
+            return;
+        }
+
         if (gameState.Jouer(plateauPos, out MoveInfo moveInfo))
         {
             StartCoroutine(OnJouer(moveInfo));
@@ -60,7 +92,11 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator OnJouer(MoveInfo moveInfo)
     {
+        peutJouer = false;
+        CacherCoupsLegaux();
         yield return AfficherMouvement(moveInfo);
+        AfficherCoupsLegaux();
+        peutJouer = true;
     }
 
 
