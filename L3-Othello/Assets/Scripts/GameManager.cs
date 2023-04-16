@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject highlightPrefab;
 
+    [SerializeField]
+    private UIManager uiManager;
+
     private Dictionary<Joueur, Piece> prefabPieces = new Dictionary<Joueur, Piece>();
     private GameState gameState = new GameState();
     private Piece[,] pieces = new Piece[8, 8];
@@ -36,6 +40,7 @@ public class GameManager : MonoBehaviour
 
         PiecesDepart();
         AfficherCoupsLegaux();
+        uiManager.SetPlayerText(gameState.JoueurActuel);
     }
 
     // Update is called once per frame
@@ -95,6 +100,7 @@ public class GameManager : MonoBehaviour
         peutJouer = false;
         CacherCoupsLegaux();
         yield return AfficherMouvement(moveInfo);
+        yield return ShowTurnOutcome(moveInfo);
         AfficherCoupsLegaux();
         peutJouer = true;
     }
@@ -120,7 +126,7 @@ public class GameManager : MonoBehaviour
 
     private void PiecesDepart()
     {
-        foreach (Position plateauPos in gameState.PositionsOccupées())
+        foreach (Position plateauPos in gameState.PositionsOccupees())
         {
             Joueur j = gameState.Plateau[plateauPos.Ligne, plateauPos.Colonne];
             PlacerPiece(prefabPieces[j], plateauPos);
@@ -139,8 +145,75 @@ public class GameManager : MonoBehaviour
     {
         PlacerPiece(prefabPieces[moveInfo.Joueur], moveInfo.Position);
         yield return new WaitForSeconds(0.33f);
-        RetournerPieces(moveInfo.Capturés);
+        RetournerPieces(moveInfo.Captures);
         yield return new WaitForSeconds(0.83f);
+    }
+
+    private IEnumerator ShowTurnSkipped(Joueur skipped)
+    {
+        uiManager.SetSkippedText(skipped);
+        yield return uiManager.AnimateTopText();
+    }
+
+    private IEnumerator ShowTurnOutcome(MoveInfo moveInfo) {
+        if (gameState.FinPartie) {
+            yield return ShowGameOver(gameState.Gagnant);
+            yield break;
+        }
+        Joueur courant = gameState.JoueurActuel;
+
+        if (courant == moveInfo.Joueur) {
+            // montrer le joueur qui a jouÃ©
+            yield return ShowTurnSkipped(courant.AutreJoueur());
+        }
+
+        uiManager.SetPlayerText(courant);
+    }
+
+    private IEnumerator ShowGameOver(Joueur winner)
+    {
+        uiManager.SetTopText("Partie terminÃ©e!");
+        yield return uiManager.AnimateTopText();
+
+        yield return uiManager.ShowScoreText();
+        yield return new WaitForSeconds(0.5f);
+        yield return ShowCounting();
+
+        uiManager.SetWinnerText(winner);
+        yield return uiManager.ShowEndScreen();
+    }
+
+    private IEnumerator ShowCounting()
+    {
+        int noir = 0, blanc = 0;
+
+        foreach(Position pos in gameState.PositionsOccupees())
+        {
+            Joueur j = gameState.Plateau[pos.Ligne, pos.Colonne];
+            if(j == Joueur.Noir)
+            {
+                noir++;
+                uiManager.SetBlackScoreText(noir);
+            }
+            else
+            {
+                blanc++;
+                uiManager.SetWhiteScoreText(blanc);
+            }
+
+            pieces[pos.Ligne, pos.Colonne].Compter();
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    private IEnumerator RestartGame(){
+        yield return uiManager.HideEndScreen();
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
+    }
+
+    public void OnRestartButtonClicked(){
+        StartCoroutine(RestartGame());
     }
 
 }
