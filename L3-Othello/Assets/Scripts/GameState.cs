@@ -173,7 +173,7 @@ public class GameState
         return captures.Count > 0;
     }
 
-    private Dictionary<Position, List<Position>> ListeMouvementsLegaux(Joueur joueur)
+    public Dictionary<Position, List<Position>> ListeMouvementsLegaux(Joueur joueur)
     {
         Dictionary<Position, List<Position>> mouvementsLegaux = new Dictionary<Position, List<Position>>();
 
@@ -209,4 +209,29 @@ public class GameState
         return nbPiecesCapturables;
     }
 
+    public Joueur[,] getNewPlateauAfterMove(Joueur[,] plateau, Position pos)
+    {
+        // clone le plateau
+        Joueur[,] newPlateau = new Joueur[8, 8];
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                newPlateau[i, j] = plateau[i, j];
+            }
+        }
+
+        // joue le coup
+        newPlateau[pos.Ligne, pos.Colonne] = JoueurActuel;
+
+        // retourne les pièces
+        List<Position> captures = new List<Position>();
+        if (EstLegal(JoueurActuel, pos, out captures))
+        {
+            RetournerPiece(captures);
+        }
+
+        // retourne le nouveau plateau
+        return newPlateau;
+    }
 }

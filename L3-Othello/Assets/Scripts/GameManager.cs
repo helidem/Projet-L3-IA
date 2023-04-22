@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
         }
         if (gameState.JoueurActuel == Joueur.Blanc)
         {
-            OnPlateauClicked(gameState.ai.Jouer(gameState.ai.difficulte));
+            OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau));
         }
         if (Input.GetMouseButtonDown(0))
         {
