@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Unity.Burst;
+using UnityEngine;
 
 public class GameState
 {
@@ -13,6 +13,7 @@ public class GameState
     public bool FinPartie { get; private set; }
     public Joueur Gagnant { get; private set; }
     public Dictionary<Position, List<Position>> MouvementsLegaux { get; private set; }
+    public AIPlayer ai { get; private set; }
 
     public GameState()
     {
@@ -21,6 +22,8 @@ public class GameState
         Plateau[4, 4] = Joueur.Blanc;
         Plateau[3, 4] = Joueur.Noir;
         Plateau[4, 3] = Joueur.Noir;
+
+        ai = new AIPlayer(this, Joueur.Blanc, 1);
 
         NbPiece = new Dictionary<Joueur, int>() { { Joueur.Noir, 2 }, { Joueur.Blanc, 2 } };
 
@@ -79,7 +82,7 @@ public class GameState
         NbPiece[joueur.AutreJoueur()] -= NbCapture;
     }
 
-    private void JoueurSuivant()
+    public void JoueurSuivant()
     {
         JoueurActuel = JoueurActuel.AutreJoueur();
         MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel);
@@ -187,6 +190,23 @@ public class GameState
             }
         }
         return mouvementsLegaux;
+    }
+
+        /**
+        * Retourne le nombre de pièces capturables par le joueur si il joue sur la position donnée.
+        * @param pos La position où le joueur veut jouer.
+        * @return Le nombre de pièces capturables.
+        */
+    public int getNombreDePiecesCapturables(Position pos)
+    {
+        int nbPiecesCapturables = 0;
+        List<Position> captures = new List<Position>();
+        if (EstLegal(JoueurActuel, pos, out captures))
+        {
+            nbPiecesCapturables = captures.Count;
+        }
+        Debug.Log("Ligne : " + pos.Ligne + " Colonne : " + pos.Colonne + " NbPieces : " + nbPiecesCapturables);
+        return nbPiecesCapturables;
     }
 
 }

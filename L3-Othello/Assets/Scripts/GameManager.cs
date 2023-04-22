@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     private bool peutJouer = true;
     private List<GameObject> highlights = new List<GameObject>();
 
- 
+
 
 
     // Start is called before the first frame update
@@ -46,11 +46,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyUp(KeyCode.Escape))
+        if (Input.GetKeyUp(KeyCode.Escape))
         {
             Application.Quit();
         }
-
+        if (gameState.JoueurActuel == Joueur.Blanc)
+        {
+            OnPlateauClicked(gameState.ai.Jouer(gameState.ai.difficulte));
+        }
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -65,12 +68,13 @@ public class GameManager : MonoBehaviour
 
     private void AfficherCoupsLegaux()
     {
-        foreach(Position position in gameState.MouvementsLegaux.Keys)
+        foreach (Position position in gameState.MouvementsLegaux.Keys)
         {
             Vector2 scenePos = PlateauToScenePos(position) + Vector2.up * 0.01f;
             GameObject hl = Instantiate(highlightPrefab, scenePos, Quaternion.identity);
             highlights.Add(hl);
-        }
+            gameState.getNombreDePiecesCapturables(position);
+        }        
     }
 
     private void CacherCoupsLegaux()
@@ -84,7 +88,7 @@ public class GameManager : MonoBehaviour
 
     private void OnPlateauClicked(Position plateauPos)
     {
-        if(!peutJouer) 
+        if (!peutJouer)
         {
             return;
         }
@@ -155,14 +159,17 @@ public class GameManager : MonoBehaviour
         yield return uiManager.AnimateTopText();
     }
 
-    private IEnumerator ShowTurnOutcome(MoveInfo moveInfo) {
-        if (gameState.FinPartie) {
+    private IEnumerator ShowTurnOutcome(MoveInfo moveInfo)
+    {
+        if (gameState.FinPartie)
+        {
             yield return ShowGameOver(gameState.Gagnant);
             yield break;
         }
         Joueur courant = gameState.JoueurActuel;
 
-        if (courant == moveInfo.Joueur) {
+        if (courant == moveInfo.Joueur)
+        {
             // montrer le joueur qui a joué
             yield return ShowTurnSkipped(courant.AutreJoueur());
         }
@@ -187,10 +194,10 @@ public class GameManager : MonoBehaviour
     {
         int noir = 0, blanc = 0;
 
-        foreach(Position pos in gameState.PositionsOccupees())
+        foreach (Position pos in gameState.PositionsOccupees())
         {
             Joueur j = gameState.Plateau[pos.Ligne, pos.Colonne];
-            if(j == Joueur.Noir)
+            if (j == Joueur.Noir)
             {
                 noir++;
                 uiManager.SetBlackScoreText(noir);
@@ -206,13 +213,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private IEnumerator RestartGame(){
+    private IEnumerator RestartGame()
+    {
         yield return uiManager.HideEndScreen();
         Scene scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(scene.name);
     }
 
-    public void OnRestartButtonClicked(){
+    public void OnRestartButtonClicked()
+    {
         StartCoroutine(RestartGame());
     }
 
