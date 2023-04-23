@@ -45,7 +45,7 @@ public class GameState
         List<Position> captures = MouvementsLegaux[position];
 
         Plateau[position.Ligne, position.Colonne] = joueur;
-        RetournerPiece(captures);
+        RetournerPiece(captures, Plateau);
         NombrePieces(joueur, captures.Count);
         TourSuivant();
 
@@ -55,9 +55,9 @@ public class GameState
 
     public IEnumerable<Position> PositionsOccupees()
     {
-        for (int l = 0; l< NB_LIGNES;  l++)
+        for (int l = 0; l < NB_LIGNES; l++)
         {
-            for (int c = 0;  c < NB_COLONNES; c++)
+            for (int c = 0; c < NB_COLONNES; c++)
             {
                 if (Plateau[l, c] != Joueur.Vide)
                 {
@@ -68,11 +68,11 @@ public class GameState
     }
 
 
-    private void RetournerPiece(List<Position> postitions)
+    private void RetournerPiece(List<Position> postitions, Joueur[,] plateau)
     {
         foreach (Position pos in postitions)
         {
-            Plateau[pos.Ligne, pos.Colonne] = Plateau[pos.Ligne, pos.Colonne].AutreJoueur();
+            plateau[pos.Ligne, pos.Colonne] = plateau[pos.Ligne, pos.Colonne].AutreJoueur();
         }
     }
 
@@ -123,21 +123,21 @@ public class GameState
         return ligne >= 0 && ligne < NB_LIGNES && colonne >= 0 && colonne < NB_COLONNES;
     }
 
-    private List<Position> CaptureDansDirection(Position position, Joueur joueur, int directionLigne, int directionColonne)
+    private List<Position> CaptureDansDirection(Position position, Joueur joueur, int directionLigne, int directionColonne, Joueur[,] plateau)
     {
         List<Position> captures = new List<Position>();
         int ligne = position.Ligne + directionLigne;
         int colonne = position.Colonne + directionColonne;
 
-        while (EstDansPlateau(ligne, colonne) && Plateau[ligne, colonne] != Joueur.Vide)
+        while (EstDansPlateau(ligne, colonne) && plateau[ligne, colonne] != Joueur.Vide)
         {
-            if (Plateau[ligne, colonne] == joueur.AutreJoueur())
+            if (plateau[ligne, colonne] == joueur.AutreJoueur())
             {
                 captures.Add(new Position(ligne, colonne));
                 ligne += directionLigne;
                 colonne += directionColonne;
             }
-            else if (Plateau[ligne, colonne] == joueur)
+            else if (plateau[ligne, colonne] == joueur)
             {
                 return captures;
             }
@@ -146,7 +146,7 @@ public class GameState
         return new List<Position>();
     }
 
-    private List<Position> Captures(Position position, Joueur joueur)
+    private List<Position> Captures(Position position, Joueur joueur, Joueur[,] plateau)
     {
         List<Position> captures = new List<Position>();
 
@@ -155,21 +155,37 @@ public class GameState
             for (int directionColonne = -1; directionColonne <= 1; directionColonne++)
             {
                 if (directionColonne == 0 && directionLigne == 0) continue;
-                captures.AddRange(CaptureDansDirection(position, joueur, directionLigne, directionColonne));
+                if (JoueurActuel == Joueur.Noir)
+                {
+                    captures.AddRange(CaptureDansDirection(position, joueur, directionLigne, directionColonne, Plateau));
+                }
+                else
+                {
+                    captures.AddRange(CaptureDansDirection(position, joueur, directionLigne, directionColonne, plateau));
+                }
             }
         }
 
         return captures;
     }
 
-    private bool EstLegal(Joueur joueur, Position position, out List<Position> captures)
+    private bool EstLegal(Joueur joueur, Position position, Joueur[,] plateau, out List<Position> captures)
     {
-        if (Plateau[position.Ligne, position.Colonne] != Joueur.Vide)
+        if (plateau[position.Ligne, position.Colonne] != Joueur.Vide)
         {
             captures = null; return false;
         }
 
-        captures = Captures(position, joueur);
+        // captures = Captures(position, joueur);
+        if (JoueurActuel == Joueur.Noir)
+        {
+            captures = Captures(position, joueur, Plateau);
+        }
+        else
+        {
+            captures = Captures(position, joueur, plateau);
+        }
+
         return captures.Count > 0;
     }
 
@@ -183,7 +199,7 @@ public class GameState
             {
                 Position position = new Position(ligne, colonne);
 
-                if (EstLegal(joueur, position, out List<Position> captures))
+                if (EstLegal(joueur, position, Plateau, out List<Position> captures))
                 {
                     mouvementsLegaux.Add(position, captures); // ou mouvementsLegaux[position] = captures;
                 }
@@ -192,16 +208,16 @@ public class GameState
         return mouvementsLegaux;
     }
 
-        /**
-        * Retourne le nombre de pièces capturables par le joueur si il joue sur la position donnée.
-        * @param pos La position où le joueur veut jouer.
-        * @return Le nombre de pièces capturables.
-        */
+    /**
+    * Retourne le nombre de pièces capturables par le joueur si il joue sur la position donnée.
+    * @param pos La position où le joueur veut jouer.
+    * @return Le nombre de pièces capturables.
+    */
     public int getNombreDePiecesCapturables(Position pos)
     {
         int nbPiecesCapturables = 0;
         List<Position> captures = new List<Position>();
-        if (EstLegal(JoueurActuel, pos, out captures))
+        if (EstLegal(JoueurActuel, pos, Plateau, out captures))
         {
             nbPiecesCapturables = captures.Count;
         }
@@ -226,9 +242,9 @@ public class GameState
 
         // retourne les pièces
         List<Position> captures = new List<Position>();
-        if (EstLegal(JoueurActuel, pos, out captures))
+        if (EstLegal(JoueurActuel, pos, newPlateau, out captures))
         {
-            RetournerPiece(captures);
+            RetournerPiece(captures, newPlateau);
         }
 
         // retourne le nouveau plateau

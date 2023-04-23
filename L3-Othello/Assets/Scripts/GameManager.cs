@@ -50,21 +50,45 @@ public class GameManager : MonoBehaviour
         {
             Application.Quit();
         }
-        if (gameState.JoueurActuel == Joueur.Blanc)
+        if (gameState.JoueurActuel == Joueur.Blanc) // joueur AI
         {
             OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau));
         }
-        if (Input.GetMouseButtonDown(0))
+        else if (gameState.JoueurActuel == Joueur.Noir) // joueur humain
         {
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
+            if (Input.GetMouseButtonDown(0))
             {
-                Vector2 impact = hitInfo.point;
-                Position plateauPos = SceneToPlateauPos(impact);
-                OnPlateauClicked(plateauPos);
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
+                {
+                    Vector2 impact = hitInfo.point;
+                    Position plateauPos = SceneToPlateauPos(impact);
+                    OnPlateauClicked(plateauPos);
+                }
             }
         }
     }
+
+    //void Update()
+    //{
+    //    if (Input.GetKeyUp(KeyCode.Escape))
+    //    {
+    //        Application.Quit();
+    //    }
+
+    //    if (Input.GetMouseButtonDown(0))
+    //    {
+    //        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+    //        if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
+    //        {
+    //            Vector2 impact = hitInfo.point;
+    //            Position plateauPos = SceneToPlateauPos(impact);
+    //            OnPlateauClicked(plateauPos);
+    //        }
+    //    }
+    //}
+
+
 
     private void AfficherCoupsLegaux()
     {
@@ -74,7 +98,7 @@ public class GameManager : MonoBehaviour
             GameObject hl = Instantiate(highlightPrefab, scenePos, Quaternion.identity);
             highlights.Add(hl);
             gameState.getNombreDePiecesCapturables(position);
-        }        
+        }
     }
 
     private void CacherCoupsLegaux()
