@@ -221,7 +221,6 @@ public class GameState
         {
             nbPiecesCapturables = captures.Count;
         }
-        Debug.Log("Ligne : " + pos.Ligne + " Colonne : " + pos.Colonne + " NbPieces : " + nbPiecesCapturables);
         return nbPiecesCapturables;
     }
 

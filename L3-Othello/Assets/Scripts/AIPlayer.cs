@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class AIPlayer
 {
@@ -17,9 +20,9 @@ public class AIPlayer
         this.difficulte = difficulte;
     }
 
-    public Position Jouer(Joueur[,] plateau)
+    public Position Jouer(Joueur[,] plateau, Joueur joueur)
     {
-        return solve(plateau, Joueur.Blanc, 3, evaluator);
+        return solve(plateau, joueur, 4, evaluator);
     }
 
     private Position JouerDifficile()
@@ -54,7 +57,6 @@ public class AIPlayer
                 bestMove = move;
             }
         }
-        Debug.Log("Nodes explored: " + nodesExplored);
         return bestMove;
     }
 
@@ -97,5 +99,29 @@ public class AIPlayer
             }
             return bestScore;
         }
+    }
+
+    internal Position Glouton(Joueur[,] plateau)
+    {
+        int captures = 0;
+        int bestCaptures = 0;
+        Position bestPosition = null;
+        foreach (Position coup in gameState.MouvementsLegaux.Keys)
+        {
+            captures = gameState.getNombreDePiecesCapturables(coup);
+            if (captures > bestCaptures)
+            {
+                bestCaptures = captures;
+                bestPosition = coup;
+            } else if (captures == bestCaptures)
+            {
+                int rand = UnityEngine.Random.Range(0, 2);
+                if (rand == 0)
+                {
+                    bestPosition = coup;
+                }
+            }
+        }
+        return bestPosition;
     }
 }

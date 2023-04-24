@@ -175,6 +175,5 @@ public class Evaluator
             }
         }
         return piecesRestantes % 2 == 0 ? -1 : 1;
-
     }
 }
