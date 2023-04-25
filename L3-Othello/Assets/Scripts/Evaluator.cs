@@ -1,15 +1,63 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+enum GamePhase
+{
+    EARLY,
+    MID,
+    END
+}
 public class Evaluator
 {
+    // public int eval(Joueur[,] plateau, Joueur joueur, GameState gameState)
+    // {
+    //     int mob = evalMobility(plateau, joueur, gameState);
+    //     int diff = evalDiffPieces(plateau, joueur);
+    //     int parite = evalParite(plateau);
+    //     int coin = evalCorners(plateau, joueur);
+    //     int bords = evalBorderMap(plateau, joueur);
+    //     // return 2*mob + diff + 1000*evalCorners(plateau, joueur);
+    //     return 2 * mob + diff + 2*parite + 1000 * coin + 1000 * bords;
+
+    // }
     public int eval(Joueur[,] plateau, Joueur joueur, GameState gameState)
     {
-        int mob = evalMobility(plateau, joueur, gameState);
-        int diff = evalDiffPieces(plateau, joueur);
-        return 2*mob + diff + 1000*evalCorners(plateau, joueur);
+        if (gameState.FinPartie)
+        {
+            return 1000 * evalDiffPieces(plateau, joueur);
+        }
+
+        switch (GetGamePhase(plateau, gameState))
+        {
+            case GamePhase.EARLY:
+                return 1000 * evalCorners(plateau, joueur) + 50 * evalMobility(plateau, joueur, gameState);
+            case GamePhase.MID:
+                return 1000 * evalCorners(plateau, joueur) + 20 * evalMobility(plateau, joueur, gameState) + 10 * evalDiffPieces(plateau, joueur) + 100 * evalParite(plateau);
+            case GamePhase.END:
+                return 1000 * evalCorners(plateau, joueur) + 100 * evalMobility(plateau, joueur, gameState) + 500 * evalDiffPieces(plateau, joueur) + 500 * evalParite(plateau);
+            default:
+                return 0;
+        }
     }
+
+    private GamePhase GetGamePhase(Joueur[,] plateau, GameState gameState)
+    {
+        int nbPieces = gameState.NbPiece[Joueur.Noir] + gameState.NbPiece[Joueur.Blanc];
+        if (nbPieces < 20)
+        {
+            return GamePhase.EARLY;
+        }
+        else if (nbPieces < 58)
+        {
+            return GamePhase.MID;
+        }
+        else
+        {
+            return GamePhase.END;
+        }
+    }
+
+
 
     public int evalDiffPieces(Joueur[,] plateau, Joueur joueur)
     {

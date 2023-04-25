@@ -23,7 +23,7 @@ public class GameState
         Plateau[3, 4] = Joueur.Noir;
         Plateau[4, 3] = Joueur.Noir;
 
-        ai = new AIPlayer(this, Joueur.Blanc, 1);
+        ai = new AIPlayer(this, 1);
 
         NbPiece = new Dictionary<Joueur, int>() { { Joueur.Noir, 2 }, { Joueur.Blanc, 2 } };
 

@@ -7,16 +7,16 @@ using static UnityEditor.PlayerSettings;
 public class AIPlayer
 {
     private GameState gameState;
-    private Joueur joueur;
+
     private int nodesExplored = 0;
     private Evaluator evaluator = new Evaluator();
 
     public int difficulte { get; private set; }
 
-    public AIPlayer(GameState gameState, Joueur joueur, int difficulte)
+    public AIPlayer(GameState gameState, int difficulte)
     {
         this.gameState = gameState;
-        this.joueur = joueur;
+
         this.difficulte = difficulte;
     }
 

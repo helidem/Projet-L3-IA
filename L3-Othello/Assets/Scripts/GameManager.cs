@@ -56,16 +56,16 @@ public class GameManager : MonoBehaviour
         }
         else if (gameState.JoueurActuel == Joueur.Noir) // joueur humain
         {
-            //if (Input.GetMouseButtonDown(0))
-            //{
-            //    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            //    if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
-            //    {
-            //        Vector2 impact = hitInfo.point;
-            //        Position plateauPos = SceneToPlateauPos(impact);
-            //        OnPlateauClicked(plateauPos);
-            //    }
-            //}
+            // if (Input.GetMouseButtonDown(0))
+            // {
+            //     Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            //     if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
+            //     {
+            //         Vector2 impact = hitInfo.point;
+            //         Position plateauPos = SceneToPlateauPos(impact);
+            //         OnPlateauClicked(plateauPos);
+            //     }
+            // }
             OnPlateauClicked(gameState.ai.Glouton(gameState.Plateau));
         }
     }
