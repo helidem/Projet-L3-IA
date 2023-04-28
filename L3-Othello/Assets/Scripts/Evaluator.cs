@@ -22,9 +22,9 @@ public class Evaluator
             case GamePhase.EARLY:
                 return 1000 * evalCorners(plateau, joueur) + 50 * evalMobility(plateau, joueur, gameState);
             case GamePhase.MID:
-                return 1000 * evalCorners(plateau, joueur) + 20 * evalMobility(plateau, joueur, gameState) + 10 * evalDiffPieces(plateau, joueur) + 100 * evalParite(plateau);
+                return 1000 * evalCorners(plateau, joueur) + 20 * evalMobility(plateau, joueur, gameState) + 10 * evalDiffPieces(plateau, joueur) + 100 * evalBords(plateau, joueur);
             case GamePhase.END:
-                return 1000 * evalCorners(plateau, joueur) + 100 * evalMobility(plateau, joueur, gameState) + 500 * evalDiffPieces(plateau, joueur) + 500 * evalParite(plateau);
+                return 1000 * evalCorners(plateau, joueur) + 100 * evalMobility(plateau, joueur, gameState) + 500 * evalDiffPieces(plateau, joueur) + 500 * evalBords(plateau, joueur);
             default:
                 return 0;
         }
@@ -140,22 +140,84 @@ public class Evaluator
 
 
     /// <summary>
-    /// Evalue la parité du nombre de pièces restantes.
+    /// Evalue la capacité à capturer les bords du plateau.
     /// </summary>
     /// <param name="plateau">Le plateau.</param>
-    public int evalParite(Joueur[,] plateau)
+    /// <param name="joueur">Le joueur actuel.</param>
+    public int evalBords(Joueur[,] plateau, Joueur joueur)
     {
-        int piecesRestantes = 64;
+        Joueur ennemi = joueur.AutreJoueur();
+        int[][] poids =
+        {
+            new int[] {200 , -100, 100,  50,  50, 100, -100,  200},
+            new int[] {-100, -200, -50, -50, -50, -50, -200, -100},
+            new int[] {100 ,  -50, 100,   0,   0, 100,  -50,  100},
+            new int[] {50  ,  -50,   0,   0,   0,   0,  -50,   50},
+            new int[] {50  ,  -50,   0,   0,   0,   0,  -50,   50},
+            new int[] {100 ,  -50, 100,   0,   0, 100,  -50,  100},
+            new int[] {-100, -200, -50, -50, -50, -50, -200, -100},
+            new int[] {200 , -100, 100,  50,  50, 100, -100,  200}
+        };
+
+        if (plateau[0, 0] != Joueur.Vide)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j <= 3; j++)
+                {
+                    poids[i][j] = 0;
+                }
+            }
+        }
+        if (plateau[0, 7] != Joueur.Vide)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 4; j <= 7; j++)
+                {
+                    poids[i][j] = 0;
+                }
+            }
+        }
+        if (plateau[7, 0] != Joueur.Vide)
+        {
+            for (int i = 5; i < 8; i++)
+            {
+                for (int j = 0; j <= 3; j++)
+                {
+                    poids[i][j] = 0;
+                }
+            }
+        }
+        if (plateau[7, 7] != Joueur.Vide)
+        {
+            for (int i = 5; i < 8; i++)
+            {
+                for (int j = 4; j <= 7; j++)
+                {
+                    poids[i][j] = 0;
+                }
+            }
+        }
+
+        int score = 0;
+        int ennemiScore = 0;
+
         for (int l = 0; l < GameState.NB_LIGNES; l++)
         {
             for (int c = 0; c < GameState.NB_COLONNES; c++)
             {
-                if (plateau[l, c] != Joueur.Vide)
+                if (plateau[l, c] == joueur)
                 {
-                    piecesRestantes--;
+                    score += poids[l][c];
+                }
+                else if (plateau[l, c] == ennemi)
+                {
+                    ennemiScore += poids[l][c];
                 }
             }
         }
-        return piecesRestantes % 2 == 0 ? -1 : 1;
+
+        return (score - ennemiScore) / (score + ennemiScore + 1);
     }
 }
