@@ -4,7 +4,6 @@ public class AIPlayer
 {
     private GameState gameState;
 
-    private int nodesExplored = 0;
     private Evaluator evaluator = new Evaluator();
 
     public int difficulte { get; private set; }
@@ -12,7 +11,6 @@ public class AIPlayer
     public AIPlayer(GameState gameState, int difficulte)
     {
         this.gameState = gameState;
-
         this.difficulte = difficulte;
     }
 
@@ -34,18 +32,17 @@ public class AIPlayer
 
     public Position solve(Joueur[,] plateau, Joueur joueur, int profondeur, Evaluator e, bool ab)
     {
-        nodesExplored = 0;
         int bestScore = int.MinValue;
         int score;
         Position bestMove = null;
         foreach (Position move in gameState.MouvementsLegaux.Keys)
         {
             Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
-            if (ab)
+            if (ab) // alpha beta
             {
                 score = MMAB(newPlateau, joueur, profondeur - 1, false, int.MinValue, int.MaxValue, e);
             }
-            else
+            else // minmax
             {
                 score = MM(newPlateau, joueur, profondeur - 1, false, e);
             }
@@ -58,39 +55,39 @@ public class AIPlayer
         return bestMove;
     }
 
+
     private int MMAB(Joueur[,] plateau, Joueur joueur, int profondeur, bool maximizingPlayer, int alpha, int beta, Evaluator e)
     {
-        nodesExplored++;
         if (profondeur == 0 || gameState.FinPartie)
         {
-            return e.eval(plateau, joueur, gameState);
+            return e.eval(plateau, joueur, gameState); // calcul de la valeur de la feuille (heuristique)
         }
-        if (maximizingPlayer)
+        if (maximizingPlayer) // joueur max
         {
             int bestScore = int.MinValue;
             foreach (Position move in gameState.ListeMouvementsLegaux(joueur, plateau).Keys)
             {
                 Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
-                int score = MMAB(newPlateau, joueur, profondeur - 1, false, alpha, beta, e);
-                bestScore = Mathf.Max(score, bestScore);
-                alpha = Mathf.Max(alpha, bestScore);
-                if (beta <= alpha)
+                int score = MMAB(newPlateau, joueur, profondeur - 1, false, alpha, beta, e); // appel recursif (joueur min)
+                bestScore = Mathf.Max(score, bestScore); // max entre le score et le bestScore
+                alpha = Mathf.Max(alpha, bestScore); // max entre alpha et bestScore
+                if (beta <= alpha) // coupure alpha beta
                 {
                     break;
                 }
             }
             return bestScore;
         }
-        else
+        else // joueur min
         {
             int bestScore = int.MaxValue;
             foreach (Position move in gameState.ListeMouvementsLegaux(joueur.AutreJoueur(), plateau).Keys)
             {
                 Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
-                int score = MMAB(newPlateau, joueur, profondeur - 1, true, alpha, beta, e);
-                bestScore = Mathf.Min(score, bestScore);
+                int score = MMAB(newPlateau, joueur, profondeur - 1, true, alpha, beta, e); // appel recursif (joueur max)
+                bestScore = Mathf.Min(score, bestScore); // min entre le score et le bestScore
                 beta = Mathf.Min(beta, bestScore);
-                if (beta <= alpha)
+                if (beta <= alpha) // coupure alpha beta
                 {
                     break;
                 }

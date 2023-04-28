@@ -66,13 +66,13 @@ public class GameManager : MonoBehaviour
         }
         else if (gameState.JoueurActuel == Joueur.Noir) // joueur humain (ou autre AI)
         {
-            if (aivsai)
+            if (aivsai) // si c'est un AI vs AI
             {
                 OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau, gameState.JoueurActuel, difficultyJoueur1));
             }
-            else
+            else // si c'est un humain
             {
-                if (Input.GetMouseButtonDown(0))
+                if (Input.GetMouseButtonDown(0)) // si le joueur clique
                 {
                     Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                     if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
@@ -88,7 +88,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private string getTypeAI(int diff)
+    private string getTypeAI(int diff) 
     {
         if (diff == 1) return "Glouton";
         else if (diff == 2) return "Minimax";
@@ -252,6 +252,11 @@ public class GameManager : MonoBehaviour
     public void OnRestartButtonClicked()
     {
         StartCoroutine(RestartGame());
+    }
+
+    public void OnBackButtonClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
     }
 
 }

@@ -37,7 +37,7 @@ public class Evaluator
         {
             return GamePhase.EARLY;
         }
-        else if (nbPieces < 32)
+        else if (nbPieces < 58) // on a testé plusieurs valeurs et 58 est la meilleure
         {
             return GamePhase.MID;
         }
@@ -48,7 +48,12 @@ public class Evaluator
     }
 
 
-
+    /// <summary>
+    /// Evalue la différence de pièces entre le joueur et son adversaire
+    /// </summary>
+    /// <param name="plateau">Le plateau.</param>
+    /// <param name="joueur">Le joueur actuel.</param>
+    /// <returns>La différence de pièces.</returns>
     public int evalDiffPieces(Joueur[,] plateau, Joueur joueur)
     {
         int nbPieces = 0;
@@ -70,6 +75,12 @@ public class Evaluator
         return 100 * (nbPieces - ennemiNbPieces) / (nbPieces + ennemiNbPieces);
     }
 
+    /// <summary>
+    /// Evalue la mobilité du joueur.
+    /// </summary>
+    /// <param name="plateau">Le plateau.</param>
+    /// <param name="joueur">Le joueur actuel.</param>
+    /// <param name="gameState">L'état du jeu.</param>
     public int evalMobility(Joueur[,] plateau, Joueur joueur, GameState gameState)
     {
         int nbCoupsPossibles = gameState.ListeMouvementsLegaux(joueur, plateau).Count;
@@ -78,6 +89,11 @@ public class Evaluator
         return 100 * (nbCoupsPossibles - ennemiNbCoupPossibles) / (nbCoupsPossibles + ennemiNbCoupPossibles + 1);
     }
 
+    /// <summary>
+    /// Evalue la capacité à capturer les coins du plateau.
+    /// </summary>
+    /// <param name="plateau">Le plateau.</param>
+    /// <param name="joueur">Le joueur actuel.</param>
     public int evalCorners(Joueur[,] plateau, Joueur joueur)
     {
         int nbCoins = 0;
@@ -122,83 +138,11 @@ public class Evaluator
         return 100 * (nbCoins - ennemiNbCoins) / (nbCoins + ennemiNbCoins + 1);
     }
 
-    public int evalBorderMap(Joueur[,] plateau, Joueur joueur)
-    {
-        Joueur ennemi = joueur.AutreJoueur();
-        int[][] poids =
-        {
-            new int[] {200 , -100, 100,  50,  50, 100, -100,  200},
-            new int[] {-100, -200, -50, -50, -50, -50, -200, -100},
-            new int[] {100 ,  -50, 100,   0,   0, 100,  -50,  100},
-            new int[] {50  ,  -50,   0,   0,   0,   0,  -50,   50},
-            new int[] {50  ,  -50,   0,   0,   0,   0,  -50,   50},
-            new int[] {100 ,  -50, 100,   0,   0, 100,  -50,  100},
-            new int[] {-100, -200, -50, -50, -50, -50, -200, -100},
-            new int[] {200 , -100, 100,  50,  50, 100, -100,  200}
-        };
 
-        if (plateau[0, 0] != Joueur.Vide)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j <= 3; j++)
-                {
-                    poids[i][j] = 0;
-                }
-            }
-        }
-        if (plateau[0, 7] != Joueur.Vide)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 4; j <= 7; j++)
-                {
-                    poids[i][j] = 0;
-                }
-            }
-        }
-        if (plateau[7, 0] != Joueur.Vide)
-        {
-            for (int i = 5; i < 8; i++)
-            {
-                for (int j = 0; j <= 3; j++)
-                {
-                    poids[i][j] = 0;
-                }
-            }
-        }
-        if (plateau[7, 7] != Joueur.Vide)
-        {
-            for (int i = 5; i < 8; i++)
-            {
-                for (int j = 4; j <= 7; j++)
-                {
-                    poids[i][j] = 0;
-                }
-            }
-        }
-
-        int score = 0;
-        int ennemiScore = 0;
-
-        for (int l = 0; l < GameState.NB_LIGNES; l++)
-        {
-            for (int c = 0; c < GameState.NB_COLONNES; c++)
-            {
-                if (plateau[l, c] == joueur)
-                {
-                    score += poids[l][c];
-                }
-                else if (plateau[l, c] == ennemi)
-                {
-                    ennemiScore += poids[l][c];
-                }
-            }
-        }
-
-        return (score - ennemiScore) / (score + ennemiScore + 1);
-    }
-
+    /// <summary>
+    /// Evalue la parité du nombre de pièces restantes.
+    /// </summary>
+    /// <param name="plateau">Le plateau.</param>
     public int evalParite(Joueur[,] plateau)
     {
         int piecesRestantes = 64;

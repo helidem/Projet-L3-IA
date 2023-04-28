@@ -33,6 +33,11 @@ public class GameState
 
     }
 
+    /// <summary>
+    /// Retourne vrai si le coup est valide et correctement joué.
+    /// </summary>
+    /// <param name="position"> Position du coup. </param>
+    /// <param name="moveInfo"> Informations sur le coup. </param>
     public bool Jouer(Position position, out MoveInfo moveInfo)
     {
         if (!MouvementsLegaux.ContainsKey(position))
@@ -68,6 +73,11 @@ public class GameState
     }
 
 
+    /// <summary>
+    /// Méthode qui retourne les pieces capturées par un joueur.
+    /// </summary>
+    /// <param name="positions"> Liste des positions des pieces capturées. </param>
+    /// <param name="plateau"> Plateau de jeu. </param>
     private void RetournerPiece(List<Position> postitions, Joueur[,] plateau)
     {
         foreach (Position pos in postitions)
@@ -88,6 +98,9 @@ public class GameState
         MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel, Plateau);
     }
 
+    /// <summary>
+    /// Retourne le gagnant de la partie.
+    /// </summary>
     private Joueur GetGagnant()
     {
         if (NbPiece[Joueur.Noir] > NbPiece[Joueur.Blanc])
@@ -117,12 +130,26 @@ public class GameState
         }
     }
 
-
+    /// <summary>
+    /// Retourne vrai si la position est dans le plateau.
+    /// </summary>
+    /// <param name="ligne">Ligne de la position.</param>
+    /// <param name="colonne">Colonne de la position.</param>
+    /// <returns>Vrai si la position est dans le plateau.</returns>
     private bool EstDansPlateau(int ligne, int colonne)
     {
         return ligne >= 0 && ligne < NB_LIGNES && colonne >= 0 && colonne < NB_COLONNES;
     }
 
+    /// <summary>
+    /// Retourne la liste des positions capturées dans une direction.
+    /// </summary>
+    /// <param name="position">Position de la pièce jouée.</param>
+    /// <param name="joueur">Joueur qui joue.</param>
+    /// <param name="directionLigne">Direction de la ligne.</param>
+    /// <param name="directionColonne">Direction de la colonne.</param>
+    /// <param name="plateau">Plateau de jeu.</param> 
+    /// <returns>Liste des positions capturées.</returns>
     private List<Position> CaptureDansDirection(Position position, Joueur joueur, int directionLigne, int directionColonne, Joueur[,] plateau)
     {
         List<Position> captures = new List<Position>();
@@ -146,6 +173,13 @@ public class GameState
         return new List<Position>();
     }
 
+    /// <summary>
+    /// Retourne la liste des positions capturées dans toutes les directions.
+    /// </summary>
+    /// <param name="position">Position de la pièce jouée.</param>
+    /// <param name="joueur">Joueur qui joue.</param>
+    /// <param name="plateau">Plateau de jeu.</param>
+    /// <returns>Liste des positions capturées.</returns>
     private List<Position> Captures(Position position, Joueur joueur, Joueur[,] plateau)
     {
         List<Position> captures = new List<Position>();
@@ -169,6 +203,14 @@ public class GameState
         return captures;
     }
 
+    /// <summary>
+    /// Retourne vrai si le mouvement est légal et retourne la liste des positions capturées.
+    /// </summary>
+    /// <param name="joueur">Joueur pour lequel on veut savoir si le mouvement est légal.</param>
+    /// <param name="position">Position de la pièce à jouer.</param>
+    /// <param name="captures">Liste des positions capturées.</param>
+    /// <param name="plateau">Le plateau</param>
+    /// <returns>Vrai si le mouvement est légal.</returns>
     private bool EstLegal(Joueur joueur, Position position, Joueur[,] plateau, out List<Position> captures)
     {
         if (plateau[position.Ligne, position.Colonne] != Joueur.Vide)
@@ -188,6 +230,12 @@ public class GameState
         return captures.Count > 0;
     }
 
+    /// <summary>
+    /// Retourne le dictonnaire des mouvements légaux avec la position de la pièce et la liste des positions capturées.
+    /// </summary>
+    /// <param name="joueur">Joueur pour lequel on veut la liste des mouvements légaux.</param>
+    /// <param name="plateau">Plateau sur lequel on veut la liste des mouvements légaux.</param>
+    /// <returns>La liste des mouvements légaux pour le joueur donné et le plateau donné.</returns>
     public Dictionary<Position, List<Position>> ListeMouvementsLegaux(Joueur joueur, Joueur[,] plateau)
     {
         Dictionary<Position, List<Position>> mouvementsLegaux = new Dictionary<Position, List<Position>>();
@@ -207,11 +255,11 @@ public class GameState
         return mouvementsLegaux;
     }
 
-    /**
-    * Retourne le nombre de pièces capturables par le joueur si il joue sur la position donnée.
-    * @param pos La position où le joueur veut jouer.
-    * @return Le nombre de pièces capturables.
-    */
+    /// <summary>
+    /// Retourne le nombre de pièces capturables par le joueur si il joue sur la position donnée.
+    /// </summary>
+    /// <param name="pos">Position où le joueur veut jouer</param>
+    /// <returns>Nombre de pièces capturables</returns>
     public int getNombreDePiecesCapturables(Position pos)
     {
         int nbPiecesCapturables = 0;
@@ -223,6 +271,13 @@ public class GameState
         return nbPiecesCapturables;
     }
 
+
+    /// <summary>
+    /// Retourne le nouveau plateau après avoir joué le coup sur la position donnée (sans changer le plateau actuel).
+    /// </summary>
+    /// <param name="plateau">Plateau actuel</param>
+    /// <param name="pos">Position où le joueur veut jouer</param>
+    /// <returns>Nouveau plateau après avoir joué le coup</returns>
     public Joueur[,] getNewPlateauAfterMove(Joueur[,] plateau, Position pos)
     {
         // clone le plateau
