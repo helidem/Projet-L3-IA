@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class AIPlayer
 {
@@ -20,38 +16,40 @@ public class AIPlayer
         this.difficulte = difficulte;
     }
 
-    public Position Jouer(Joueur[,] plateau, Joueur joueur)
+    public Position Jouer(Joueur[,] plateau, Joueur joueur, int difficulte)
     {
-        return solve(plateau, joueur, 4, evaluator);
+        switch (difficulte)
+        {
+            case 1:
+                return Glouton(plateau); // glouton
+            case 2:
+                return solve(plateau, joueur, 3, evaluator, false); // minmax
+            case 3:
+                return solve(plateau, joueur, 5, evaluator, true); // minmax avec alpha beta
+            default:
+                return Glouton(plateau);
+        }
     }
 
-    private Position JouerDifficile()
-    {
-        return null;
-    }
 
-    private Position JouerMoyen()
-    {
-        return null;
-    }
-
-    private Position JouerFacile()
-    {
-        Position pos = new Position(2, 2);
-        gameState.getNewPlateauAfterMove(gameState.Plateau, pos);
-        return pos;
-    }
-
-    public Position solve(Joueur[,] plateau, Joueur joueur, int profondeur, Evaluator e)
+    public Position solve(Joueur[,] plateau, Joueur joueur, int profondeur, Evaluator e, bool ab)
     {
         nodesExplored = 0;
         int bestScore = int.MinValue;
+        int score;
         Position bestMove = null;
         foreach (Position move in gameState.MouvementsLegaux.Keys)
         {
             Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
-            int score = MMAB(newPlateau, joueur, profondeur - 1, false, int.MinValue, int.MaxValue, e);
-            if (score > bestScore)
+            if (ab)
+            {
+                score = MMAB(newPlateau, joueur, profondeur - 1, false, int.MinValue, int.MaxValue, e);
+            }
+            else
+            {
+                score = MM(newPlateau, joueur, profondeur - 1, false, e);
+            }
+            if (score >= bestScore)
             {
                 bestScore = score;
                 bestMove = move;
@@ -70,7 +68,7 @@ public class AIPlayer
         if (maximizingPlayer)
         {
             int bestScore = int.MinValue;
-            foreach (Position move in gameState.MouvementsLegaux.Keys)
+            foreach (Position move in gameState.ListeMouvementsLegaux(joueur, plateau).Keys)
             {
                 Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
                 int score = MMAB(newPlateau, joueur, profondeur - 1, false, alpha, beta, e);
@@ -86,7 +84,7 @@ public class AIPlayer
         else
         {
             int bestScore = int.MaxValue;
-            foreach (Position move in gameState.MouvementsLegaux.Keys)
+            foreach (Position move in gameState.ListeMouvementsLegaux(joueur.AutreJoueur(), plateau).Keys)
             {
                 Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
                 int score = MMAB(newPlateau, joueur, profondeur - 1, true, alpha, beta, e);
@@ -101,6 +99,35 @@ public class AIPlayer
         }
     }
 
+    private int MM(Joueur[,] plateau, Joueur joueur, int profondeur, bool max, Evaluator e)
+    {
+        if (profondeur == 0 || gameState.FinPartie)
+        {
+            return e.eval(plateau, joueur, gameState);
+        }
+
+        int score;
+        if (max)
+        {
+            score = int.MinValue;
+            foreach (Position move in gameState.ListeMouvementsLegaux(joueur, plateau).Keys)
+            {
+                Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
+                score = Mathf.Max(score, MM(newPlateau, joueur, profondeur - 1, false, e));
+            }
+        }
+        else
+        {
+            score = int.MaxValue;
+            foreach (Position move in gameState.ListeMouvementsLegaux(joueur.AutreJoueur(), plateau).Keys)
+            {
+                Joueur[,] newPlateau = gameState.getNewPlateauAfterMove(plateau, move);
+                score = Mathf.Min(score, MM(newPlateau, joueur, profondeur - 1, true, e));
+            }
+
+        }
+        return score;
+    }
     internal Position Glouton(Joueur[,] plateau)
     {
         int captures = 0;
@@ -113,7 +140,8 @@ public class AIPlayer
             {
                 bestCaptures = captures;
                 bestPosition = coup;
-            } else if (captures == bestCaptures)
+            }
+            else if (captures == bestCaptures)
             {
                 int rand = UnityEngine.Random.Range(0, 2);
                 if (rand == 0)

@@ -7,7 +7,7 @@ public static class JoueurExtensions
 {
     public static Joueur AutreJoueur(this Joueur joueur)
     {
-        if(joueur == Joueur.Noir)
+        if (joueur == Joueur.Noir)
         {
             return Joueur.Blanc;
         }

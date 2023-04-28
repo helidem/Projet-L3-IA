@@ -9,17 +9,7 @@ enum GamePhase
 }
 public class Evaluator
 {
-    // public int eval(Joueur[,] plateau, Joueur joueur, GameState gameState)
-    // {
-    //     int mob = evalMobility(plateau, joueur, gameState);
-    //     int diff = evalDiffPieces(plateau, joueur);
-    //     int parite = evalParite(plateau);
-    //     int coin = evalCorners(plateau, joueur);
-    //     int bords = evalBorderMap(plateau, joueur);
-    //     // return 2*mob + diff + 1000*evalCorners(plateau, joueur);
-    //     return 2 * mob + diff + 2*parite + 1000 * coin + 1000 * bords;
 
-    // }
     public int eval(Joueur[,] plateau, Joueur joueur, GameState gameState)
     {
         if (gameState.FinPartie)
@@ -47,7 +37,7 @@ public class Evaluator
         {
             return GamePhase.EARLY;
         }
-        else if (nbPieces < 58)
+        else if (nbPieces < 32)
         {
             return GamePhase.MID;
         }
@@ -82,8 +72,8 @@ public class Evaluator
 
     public int evalMobility(Joueur[,] plateau, Joueur joueur, GameState gameState)
     {
-        int nbCoupsPossibles = gameState.ListeMouvementsLegaux(joueur).Count;
-        int ennemiNbCoupPossibles = gameState.ListeMouvementsLegaux(joueur == Joueur.Noir ? Joueur.Blanc : Joueur.Noir).Count;
+        int nbCoupsPossibles = gameState.ListeMouvementsLegaux(joueur, plateau).Count;
+        int ennemiNbCoupPossibles = gameState.ListeMouvementsLegaux(joueur == Joueur.Noir ? Joueur.Blanc : Joueur.Noir, plateau).Count;
 
         return 100 * (nbCoupsPossibles - ennemiNbCoupPossibles) / (nbCoupsPossibles + ennemiNbCoupPossibles + 1);
     }

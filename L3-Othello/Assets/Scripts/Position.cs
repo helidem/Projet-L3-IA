@@ -9,7 +9,7 @@ public class Position
         Colonne = colonne;
     }
 
-    
+
     public override bool Equals(object obj)
     {
         if (obj is Position autre)

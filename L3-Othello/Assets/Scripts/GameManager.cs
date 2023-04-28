@@ -28,6 +28,9 @@ public class GameManager : MonoBehaviour
     private Piece[,] pieces = new Piece[8, 8];
     private bool peutJouer = true;
     private List<GameObject> highlights = new List<GameObject>();
+    public int difficulty;
+    public int difficultyJoueur1;
+    public bool aivsai;
 
 
 
@@ -35,12 +38,19 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.difficulty = MainMenu.difficulty;
+        this.aivsai = MainMenu.aivsaiBool;
+        if (aivsai)
+        {
+            this.difficultyJoueur1 = MainMenu.difficultyJoueur1;
+        }
         prefabPieces[Joueur.Noir] = pieceNoir;
         prefabPieces[Joueur.Blanc] = pieceBlanc;
 
         PiecesDepart();
         AfficherCoupsLegaux();
-        uiManager.SetPlayerText(gameState.JoueurActuel);
+        uiManager.SetPlayerText(gameState.JoueurActuel, getTypeAI(difficultyJoueur1));
+
     }
 
     // Update is called once per frame
@@ -52,44 +62,39 @@ public class GameManager : MonoBehaviour
         }
         if (gameState.JoueurActuel == Joueur.Blanc) // joueur AI
         {
-            OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau, gameState.JoueurActuel));
+            OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau, gameState.JoueurActuel, difficulty));
         }
-        else if (gameState.JoueurActuel == Joueur.Noir) // joueur humain
+        else if (gameState.JoueurActuel == Joueur.Noir) // joueur humain (ou autre AI)
         {
-            // if (Input.GetMouseButtonDown(0))
-            // {
-            //     Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            //     if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
-            //     {
-            //         Vector2 impact = hitInfo.point;
-            //         Position plateauPos = SceneToPlateauPos(impact);
-            //         OnPlateauClicked(plateauPos);
-            //     }
-            // }
-            OnPlateauClicked(gameState.ai.Glouton(gameState.Plateau));
+            if (aivsai)
+            {
+                OnPlateauClicked(gameState.ai.Jouer(gameState.Plateau, gameState.JoueurActuel, difficultyJoueur1));
+            }
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
+                    {
+                        Vector2 impact = hitInfo.point;
+                        Position plateauPos = SceneToPlateauPos(impact);
+                        OnPlateauClicked(plateauPos);
+                    }
+                }
+            }
+
+
         }
     }
 
-    //void Update()
-    //{
-    //    if (Input.GetKeyUp(KeyCode.Escape))
-    //    {
-    //        Application.Quit();
-    //    }
-
-    //    if (Input.GetMouseButtonDown(0))
-    //    {
-    //        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-    //        if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f, plateauLayer))
-    //        {
-    //            Vector2 impact = hitInfo.point;
-    //            Position plateauPos = SceneToPlateauPos(impact);
-    //            OnPlateauClicked(plateauPos);
-    //        }
-    //    }
-    //}
-
-
+    private string getTypeAI(int diff)
+    {
+        if (diff == 1) return "Glouton";
+        else if (diff == 2) return "Minimax";
+        else if (diff == 3) return "AlphaBeta";
+        else return "Humain";
+    }
 
     private void AfficherCoupsLegaux()
     {
@@ -98,7 +103,6 @@ public class GameManager : MonoBehaviour
             Vector2 scenePos = PlateauToScenePos(position) + Vector2.up * 0.01f;
             GameObject hl = Instantiate(highlightPrefab, scenePos, Quaternion.identity);
             highlights.Add(hl);
-            gameState.getNombreDePiecesCapturables(position);
         }
     }
 
@@ -199,7 +203,7 @@ public class GameManager : MonoBehaviour
             yield return ShowTurnSkipped(courant.AutreJoueur());
         }
 
-        uiManager.SetPlayerText(courant);
+        uiManager.SetPlayerText(courant, getTypeAI((courant == Joueur.Noir) ? difficultyJoueur1 : difficulty));
     }
 
     private IEnumerator ShowGameOver(Joueur winner)

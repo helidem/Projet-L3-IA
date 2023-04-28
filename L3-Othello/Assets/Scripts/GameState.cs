@@ -29,7 +29,7 @@ public class GameState
 
         JoueurActuel = Joueur.Noir;
 
-        MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel);
+        MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel, Plateau);
 
     }
 
@@ -85,7 +85,7 @@ public class GameState
     public void JoueurSuivant()
     {
         JoueurActuel = JoueurActuel.AutreJoueur();
-        MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel);
+        MouvementsLegaux = ListeMouvementsLegaux(JoueurActuel, Plateau);
     }
 
     private Joueur GetGagnant()
@@ -176,7 +176,6 @@ public class GameState
             captures = null; return false;
         }
 
-        // captures = Captures(position, joueur);
         if (JoueurActuel == Joueur.Noir)
         {
             captures = Captures(position, joueur, Plateau);
@@ -189,7 +188,7 @@ public class GameState
         return captures.Count > 0;
     }
 
-    public Dictionary<Position, List<Position>> ListeMouvementsLegaux(Joueur joueur)
+    public Dictionary<Position, List<Position>> ListeMouvementsLegaux(Joueur joueur, Joueur[,] plateau)
     {
         Dictionary<Position, List<Position>> mouvementsLegaux = new Dictionary<Position, List<Position>>();
 
@@ -199,7 +198,7 @@ public class GameState
             {
                 Position position = new Position(ligne, colonne);
 
-                if (EstLegal(joueur, position, Plateau, out List<Position> captures))
+                if (EstLegal(joueur, position, plateau, out List<Position> captures))
                 {
                     mouvementsLegaux.Add(position, captures); // ou mouvementsLegaux[position] = captures;
                 }
